@@ -63,9 +63,9 @@ receivers:
     excludedImages: ${env:ECS_METADATA_EXCLUDED_IMAGES}
   smartagent/postgresql:
     type: postgresql
-    host: "${POSTGRES_HOST}"
+    host: ${env:POSTGRES_HOST}
     port: 5432
-    connectionString: "${CONNECTION_STRING}"
+    connectionString: ${env:CONNECTION_STRING}
     extraMetrics: ["*"]
 
 processors:
