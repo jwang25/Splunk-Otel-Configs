@@ -67,7 +67,6 @@ receivers:
     port: 5432
     connectionString: ${env:CONNECTION_STRING}
     extraMetrics: ["*"]
-    topQueryLimit: -1
 
 processors:
   batch:
