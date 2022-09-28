@@ -72,6 +72,7 @@ receivers:
     - type: sql
     dbDriver: postgres
     connectionString: ${env:CONNECTION_STRING}
+    params: *psqlParams
     host: ${env:POSTGRES_HOST}
     port: 5432
     queries:
@@ -108,11 +109,11 @@ processors:
   # Optional: The following processor can be used to add a default "deployment.environment" attribute to the logs and
   # traces when it's not populated by instrumentation libraries.
   # If enabled, make sure to enable this processor in the pipeline below.
-  #resource/add_environment:
-    #attributes:
-      #- action: insert
-        #value: staging/production/...
-        #key: deployment.environment
+  resource/add_environment:
+    attributes:
+      - action: insert
+        value: ${env:POSTGRES_HOST}
+        key: host.name
 
 exporters:
   # Traces
