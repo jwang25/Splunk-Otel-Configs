@@ -68,7 +68,7 @@ receivers:
     connectionString: ${env:CONNECTION_STRING}
     extraMetrics: ["*"]
     extraGroups: [queries,replication]
-  smartagent/postgresql/sql:
+  smartagent/sql:
     - type: sql
       dbDriver: postgres
       connectionString: ${env:CONNECTION_STRING}
@@ -144,7 +144,7 @@ service:
 #        - resource/add_environment
       exporters: [sapm, signalfx]
     metrics:
-      receivers: [signalfx, smartagent/signalfx-forwarder, smartagent/ecs-metadata, prometheus/internal, smartagent/postgresql, smartagent/postgresql/sql]
+      receivers: [signalfx, smartagent/signalfx-forwarder, smartagent/ecs-metadata, prometheus/internal, smartagent/postgresql, smartagent/sql]
       processors: [memory_limiter, batch, resourcedetection, resource/add_environment]
       exporters: [signalfx]
     logs:
