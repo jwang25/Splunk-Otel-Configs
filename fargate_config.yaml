@@ -72,7 +72,6 @@ receivers:
     - type: sql
       dbDriver: postgres
       connectionString: ${env:CONNECTION_STRING}
-      params: *psqlParams
       host: ${env:POSTGRES_HOST}
       port: 5432
       queries:
