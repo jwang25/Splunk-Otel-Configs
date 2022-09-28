@@ -70,20 +70,20 @@ receivers:
     extraGroups: [queries,replication]
   smartagent/postgresql/sql:
     - type: sql
-    dbDriver: postgres
-    connectionString: ${env:CONNECTION_STRING}
-    params: *psqlParams
-    host: ${env:POSTGRES_HOST}
-    port: 5432
-    queries:
-      - query: 'select sum(size) as size from pg_ls_waldir();'
-        metrics:
-          - metricName: "pg_ls_waldir_size"
-            valueColumn: "size"
-      - query: "select count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
-        metrics:
-          - metricName: "pg_wal_total_size"
-            valueColumn: "total_size"
+      dbDriver: postgres
+      connectionString: ${env:CONNECTION_STRING}
+      params: *psqlParams
+      host: ${env:POSTGRES_HOST}
+      port: 5432
+      queries:
+        - query: 'select sum(size) as size from pg_ls_waldir();'
+          metrics:
+            - metricName: "pg_ls_waldir_size"
+              valueColumn: "size"
+        - query: "select count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
+          metrics:
+            - metricName: "pg_wal_total_size"
+              valueColumn: "total_size"
 processors:
   batch:
   # Enabling the memory_limiter is strongly recommended for every pipeline.
@@ -145,7 +145,7 @@ service:
       exporters: [sapm, signalfx]
     metrics:
       receivers: [signalfx, smartagent/signalfx-forwarder, smartagent/ecs-metadata, prometheus/internal, smartagent/postgresql, smartagent/postgresql/sql]
-      processors: [memory_limiter, batch, resourcedetection]
+      processors: [memory_limiter, batch, resourcedetection, resource/add_environment]
       exporters: [signalfx]
     logs:
       receivers: [otlp]
@@ -153,7 +153,7 @@ service:
         - memory_limiter
         - batch
         - resourcedetection
-      #- resource/add_environment
+        #- resource/add_environment
       exporters: [splunk_hec]
       # Use instead when sending to gateway
       #exporters: [otlp]
