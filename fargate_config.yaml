@@ -72,9 +72,9 @@ receivers:
   smartagent/sql:
     - type: sql
       dbDriver: postgres
-      connectionString: ${env:CONNECTION_STRING}
       host: ${env:POSTGRES_HOST}
       port: 5432
+      connectionString: ${env:CONNECTION_STRING}
       queries:
         - query: 'select sum(size) as size from pg_ls_waldir();'
           metrics:
