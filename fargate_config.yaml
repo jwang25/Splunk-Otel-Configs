@@ -64,7 +64,7 @@ receivers:
   smartagent/postgresql:
     type: postgresql
     topQueryLimit: 100
-    connectionString: 'host={{.host}} dbname=postgres port={{.port}} user={{.user}} password={{.password}} sslmode=disable'
+    connectionString: 'host={{.host}} port={{.port}} user={{.user}} password={{.password}} sslmode=disable'
     params:
       host: ${env:POSTGRES_HOST}
       port: 5432
@@ -75,7 +75,7 @@ receivers:
   smartagent/sql:
     - type: sql
       dbDriver: postgres
-      connectionString: 'host={{.host}} port={{.port}} dbname=postgres user={{.user}} password={{.password}} sslmode=disable'
+      connectionString: 'host={{.host}} port={{.port}} user={{.user}} password={{.password}} sslmode=disable'
       params:
         host: ${env:POSTGRES_HOST}
         port: 5432
