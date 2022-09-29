@@ -86,16 +86,10 @@ receivers:
           metrics:
             - metricName: "pg_ls_waldir_size"
               valueColumn: "size"
-              dimensions:
-                key: "database"
-                value: "postgres"
         - query: "select count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
           metrics:
             - metricName: "pg_wal_total_size"
               valueColumn: "total_size"
-              dimensions:
-                key: "database"
-                value: "postgres"
   smartagent/sql/other:
     - type: sql
       dbDriver: postgres
@@ -111,17 +105,11 @@ receivers:
             - metricName: "scan_delta_idx_missing"
               valueColumn: "delta"
               dimensionColumns: ["table_name"]
-              dimensions:
-                key: "database"
-                value: "test"
         - query: "SELECT relname as table_name, n_dead_tup FROM pg_stat_user_tables;"
           metrics:
             - metricName: "num_dead_rows"
               valueColumn: "n_dead_tup"
               dimensionColumns: ["table_name"]
-              dimensions:
-                key: "database"
-                value: "test"
 processors:
   batch:
   # Enabling the memory_limiter is strongly recommended for every pipeline.
@@ -148,11 +136,27 @@ processors:
   # traces when it's not populated by instrumentation libraries.
   # If enabled, make sure to enable this processor in the pipeline below.
   resource/add_environment:
-    attributes:
+    attributes/env:
       - action: insert
         value: ${env:POSTGRES_HOST}
         key: host.name
-
+    attributes/dbname_postgres:
+      include:
+        match_type: strict
+        sf_metric: ["pg_ls_waldir_size", "pg_wal_total_size"]
+      actions:
+        - key: database
+          value: "postgres"
+          action: insert
+    attributes/dbname_postgres:
+      include:
+        match_type: strict
+        sf_metric: ["scan_delta_idx_missing", "num_dead_rows"]
+      actions:
+        - key: database
+          value: "test"
+          action: insert
+        
 exporters:
   # Traces
   sapm:
