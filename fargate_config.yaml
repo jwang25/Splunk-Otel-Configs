@@ -136,26 +136,26 @@ processors:
   # traces when it's not populated by instrumentation libraries.
   # If enabled, make sure to enable this processor in the pipeline below.
   resource/add_environment:
-    attributes/env:
+    attributes:
       - action: insert
         value: ${env:POSTGRES_HOST}
         key: host.name
-    attributes/dbname_postgres:
-      include:
-        match_type: strict
-        metric_names: ["pg_ls_waldir_size", "pg_wal_total_size"]
-      actions:
-        - key: database
-          value: "postgres"
-          action: insert
-    attributes/dbname_test:
-      include:
-        match_type: strict
-        metric_names: ["scan_delta_idx_missing", "num_dead_rows"]
-      actions:
-        - key: database
-          value: "test"
-          action: insert
+  attributes/dbname_postgres:
+    include:
+      match_type: strict
+      metric_names: ["pg_ls_waldir_size", "pg_wal_total_size"]
+    actions:
+      - key: database
+        value: "postgres"
+        action: insert
+  attributes/dbname_test:
+    include:
+      match_type: strict
+      metric_names: ["scan_delta_idx_missing", "num_dead_rows"]
+    actions:
+      - key: database
+        value: "test"
+        action: insert
         
 exporters:
   # Traces
@@ -187,7 +187,7 @@ service:
       exporters: [sapm, signalfx]
     metrics:
       receivers: [signalfx, smartagent/signalfx-forwarder, smartagent/ecs-metadata, prometheus/internal, smartagent/postgresql, smartagent/sql/system, smartagent/sql/other]
-      processors: [memory_limiter, batch, resourcedetection, resource/add_environment]
+      processors: [memory_limiter, batch, resourcedetection, resource/add_environment, attributes/dbname_postgres, attributes/dbname_test]
       exporters: [signalfx]
     logs:
       receivers: [otlp]
