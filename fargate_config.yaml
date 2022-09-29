@@ -105,11 +105,11 @@ receivers:
             - metricName: "scan_delta_idx_missing"
               valueColumn: "delta"
               dimensionColumns: ["table_name"]
-          - query: "SELECT relname as table_name, n_dead_tup FROM pg_stat_user_tables;"
-            metrics:
-              - metricName: "num_dead_rows"
-                valueColumn: "n_dead_tup"
-                dimensionColumns: ["table_name"]
+        - query: "SELECT relname as table_name, n_dead_tup FROM pg_stat_user_tables;"
+          metrics:
+            - metricName: "num_dead_rows"
+              valueColumn: "n_dead_tup"
+              dimensionColumns: ["table_name"]
 processors:
   batch:
   # Enabling the memory_limiter is strongly recommended for every pipeline.
