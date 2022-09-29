@@ -94,7 +94,7 @@ receivers:
           metrics:
             - metricName: "scan_delta_for_missing_idx"
               volumeColumn: "delta"
-              dimensionColumns: "relname"
+              dimensionColumns: ["relname"]
 processors:
   batch:
   # Enabling the memory_limiter is strongly recommended for every pipeline.
