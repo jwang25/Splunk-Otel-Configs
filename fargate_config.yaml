@@ -90,6 +90,11 @@ receivers:
           metrics:
             - metricName: "pg_wal_total_size"
               valueColumn: "total_size"
+        - query: "SELECT relname, seq_scan-idx_scan delta FROM pg_stat_user_tables WHERE seq_scan-idx_scan >0;"
+          metrics:
+            - metricName: "scan_delta_for_missing_idx"
+              volumeColumn: "delta"
+              dimensionColumns: "relname"
 processors:
   batch:
   # Enabling the memory_limiter is strongly recommended for every pipeline.
