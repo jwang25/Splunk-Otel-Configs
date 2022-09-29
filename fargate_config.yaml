@@ -65,6 +65,7 @@ receivers:
     type: postgresql
     host: ${env:POSTGRES_HOST}
     port: 5432
+    topQueryLimit: 1000
     connectionString: ${env:CONNECTION_STRING}
     extraMetrics: ["*"]
     extraGroups: [queries,replication]
