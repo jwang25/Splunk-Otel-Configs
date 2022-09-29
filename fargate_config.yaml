@@ -148,7 +148,7 @@ processors:
         - key: database
           value: "postgres"
           action: insert
-    attributes/dbname_postgres:
+    attributes/dbname_test:
       include:
         match_type: strict
         sf_metric: ["scan_delta_idx_missing", "num_dead_rows"]
