@@ -64,23 +64,23 @@ receivers:
   smartagent/postgresql:
     type: postgresql
     topQueryLimit: 100
+    connectionString: 'host={{.host}} dbname=postgres port={{.port}} user={{.user}} password={{.password}} sslmode=disable'
     params:
       host: ${env:POSTGRES_HOST}
       port: 5432
       user: ${env:username}
       password: ${env:password}
-    connectionString: 'host={{.host}} dbname=postgres port={{.port}} user={{.user}} password={{.password}} sslmode=disable'
     extraMetrics: ["*"]
     extraGroups: [queries,replication]
   smartagent/sql:
     - type: sql
       dbDriver: postgres
+      connectionString: 'host={{.host}} port={{.port}} dbname=postgres user={{.user}} password={{.password}} sslmode=disable'
       params:
         host: ${env:POSTGRES_HOST}
         port: 5432
         user: ${env:username}
         password: ${env:password}
-      connectionString: 'host={{.host}} port={{.port}} dbname=postgres user={{.user}} password={{.password}} sslmode=disable'
       queries:
         - query: 'select sum(size) as size from pg_ls_waldir();'
           metrics:
