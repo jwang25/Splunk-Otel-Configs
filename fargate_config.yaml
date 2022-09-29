@@ -72,10 +72,10 @@ receivers:
       password: ${env:password}
     extraMetrics: ["*"]
     extraGroups: [queries,replication]
-  smartagent/sql:
+  smartagent/sql_system:
     - type: sql
       dbDriver: postgres
-      connectionString: 'host={{.host}} port={{.port}} user={{.user}} password={{.password}} sslmode=disable'
+      connectionString: 'host={{.host}} port={{.port}} dbname=postgres user={{.user}} password={{.password}} sslmode=disable'
       params:
         host: ${env:POSTGRES_HOST}
         port: 5432
@@ -90,16 +90,26 @@ receivers:
           metrics:
             - metricName: "pg_wal_total_size"
               valueColumn: "total_size"
+  smartagent/sql_other:
+    - type: sql
+      dbDriver: postgres
+      connectionString: 'host={{.host}} port={{.port}} dbname=test user={{.user}} password={{.password}} sslmode=disable'
+      params:
+        host: ${env:POSTGRES_HOST}
+        port: 5432
+        user: ${env:username}
+        password: ${env:password}
+      queries:
         - query: "SELECT relname as table_name, seq_scan-idx_scan delta FROM pg_stat_user_tables WHERE seq_scan-idx_scan >0;"
           metrics:
             - metricName: "scan_delta_idx_missing"
               valueColumn: "delta"
               dimensionColumns: ["table_name"]
-        - query: "SELECT relname as table_name, n_dead_tup FROM pg_stat_user_tables;"
-          metrics:
-            - metricName: "num_dead_rows"
-              valueColumn: "n_dead_tup"
-              dimensionColumns: ["table_name"]
+          - query: "SELECT relname as table_name, n_dead_tup FROM pg_stat_user_tables;"
+            metrics:
+              - metricName: "num_dead_rows"
+                valueColumn: "n_dead_tup"
+                dimensionColumns: ["table_name"]
 processors:
   batch:
   # Enabling the memory_limiter is strongly recommended for every pipeline.
@@ -160,7 +170,7 @@ service:
 #        - resource/add_environment
       exporters: [sapm, signalfx]
     metrics:
-      receivers: [signalfx, smartagent/signalfx-forwarder, smartagent/ecs-metadata, prometheus/internal, smartagent/postgresql, smartagent/sql]
+      receivers: [signalfx, smartagent/signalfx-forwarder, smartagent/ecs-metadata, prometheus/internal, smartagent/postgresql, smartagent/sql_system, smartagent/sql_other]
       processors: [memory_limiter, batch, resourcedetection, resource/add_environment]
       exporters: [signalfx]
     logs:
