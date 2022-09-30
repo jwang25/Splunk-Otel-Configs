@@ -143,7 +143,7 @@ processors:
   attributes/dbname_postgres:
     include:
       match_type: strict
-      metric_names: ["pg_ls_waldir_size", "pg_wal_total_size", "wal_file_count"]
+      metric_names: ["pg_ls_waldir_size", "pg_wal_total_size"]
     actions:
       - key: database
         value: "postgres"
