@@ -90,10 +90,10 @@ receivers:
           metrics:
             - metricName: "pg_wal_total_size"
               valueColumn: "total_size"
-        - query: "SELECT COUNT(*) FROM pg_ls_dir('pg_xlog') WHERE pg_ls_dir ~ '^[0-9A-F]{24}';"
+        - query: "SELECT COUNT(*) as file_count FROM pg_ls_dir('pg_xlog') WHERE pg_ls_dir ~ '^[0-9A-F]{24}';"
           metrics:
             - metricName: "wal_file_count"
-              volumeColumn: "count"
+              volumeColumn: "file_count"
   smartagent/sql/other:
     - type: sql
       dbDriver: postgres
