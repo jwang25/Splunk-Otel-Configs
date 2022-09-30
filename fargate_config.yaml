@@ -100,11 +100,6 @@ receivers:
         user: ${env:username}
         password: ${env:password}
       queries:
-        - query: "SELECT relname as table_name, seq_scan-idx_scan delta FROM pg_stat_user_tables WHERE seq_scan-idx_scan >0;"
-          metrics:
-            - metricName: "scan_delta_idx_missing"
-              valueColumn: "delta"
-              dimensionColumns: ["table_name"]
         - query: "SELECT relname as table_name, n_dead_tup FROM pg_stat_user_tables;"
           metrics:
             - metricName: "num_dead_rows"
@@ -151,7 +146,7 @@ processors:
   attributes/dbname_test:
     include:
       match_type: strict
-      metric_names: ["scan_delta_idx_missing", "num_dead_rows"]
+      metric_names: ["num_dead_rows"]
     actions:
       - key: database
         value: "test"
