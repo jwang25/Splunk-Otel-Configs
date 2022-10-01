@@ -100,11 +100,11 @@ receivers:
         user: ${env:username}
         password: ${env:password}
       queries:
-        - query: "SELECT relname as table_name, n_dead_tup FROM pg_stat_user_tables;"
+        - query: "SELECT relname as table, n_dead_tup FROM pg_stat_user_tables;"
           metrics:
             - metricName: "pg_custom_num_dead_rows"
               valueColumn: "n_dead_tup"
-              dimensionColumns: ["table_name"]
+              dimensionColumns: ["table"]
         - query: "SELECT temp_bytes, datname as database FROM pg_stat_database WHERE datname IS NOT NULL;"
           metrics:
             - metricName: "pg_custom_temp_bytes"
@@ -149,11 +149,11 @@ receivers:
         user: ${env:username}
         password: ${env:password}
       queries:
-        - query: "SELECT relname as table_name, n_dead_tup FROM pg_stat_user_tables;"
+        - query: "SELECT relname as table, n_dead_tup FROM pg_stat_user_tables;"
           metrics:
             - metricName: "pg_custom_num_dead_rows"
               valueColumn: "n_dead_tup"
-              dimensionColumns: ["table_name"]
+              dimensionColumns: ["table"]
         - query: "SELECT temp_bytes, datname as database FROM pg_stat_database WHERE datname IS NOT NULL;"
           metrics:
             - metricName: "pg_custom_temp_bytes"
