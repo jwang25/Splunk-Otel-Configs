@@ -84,11 +84,11 @@ receivers:
       queries:
         - query: 'select sum(size) as size from pg_ls_waldir();'
           metrics:
-            - metricName: "pg_ls_waldir_size"
+            - metricName: "pg_custom_ls_waldir_size"
               valueColumn: "size"
         - query: "select count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
           metrics:
-            - metricName: "pg_wal_total_size"
+            - metricName: "pg_custom_wal_total_size"
               valueColumn: "total_size"
   smartagent/sql/other:
     - type: sql
@@ -102,12 +102,12 @@ receivers:
       queries:
         - query: "SELECT relname as table_name, n_dead_tup FROM pg_stat_user_tables;"
           metrics:
-            - metricName: "num_dead_rows"
+            - metricName: "pg_custom_num_dead_rows"
               valueColumn: "n_dead_tup"
               dimensionColumns: ["table_name"]
         - query: "SELECT temp_bytes, datname as database FROM pg_stat_database WHERE datname IS NOT NULL;"
           metrics:
-            - metricName: "temp_bytes"
+            - metricName: "pg_custom_temp_bytes"
               valueColumn: "temp_bytes"
               dimensionColumns: ["database"]
   smartagent/postgresql_host_two:
@@ -133,11 +133,11 @@ receivers:
       queries:
         - query: 'select sum(size) as size from pg_ls_waldir();'
           metrics:
-            - metricName: "pg_ls_waldir_size"
+            - metricName: "pg_custom_ls_waldir_size"
               valueColumn: "size"
         - query: "select count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
           metrics:
-            - metricName: "pg_wal_total_size"
+            - metricName: "pg_custom_wal_total_size"
               valueColumn: "total_size"
   smartagent/sql/other_2:
     - type: sql
@@ -151,12 +151,12 @@ receivers:
       queries:
         - query: "SELECT relname as table_name, n_dead_tup FROM pg_stat_user_tables;"
           metrics:
-            - metricName: "num_dead_rows"
+            - metricName: "pg_custom_num_dead_rows"
               valueColumn: "n_dead_tup"
               dimensionColumns: ["table_name"]
         - query: "SELECT temp_bytes, datname as database FROM pg_stat_database WHERE datname IS NOT NULL;"
           metrics:
-            - metricName: "temp_bytes"
+            - metricName: "pg_custom_temp_bytes"
               valueColumn: "temp_bytes"
               dimensionColumns: ["database"]
 processors:
