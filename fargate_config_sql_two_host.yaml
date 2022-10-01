@@ -82,14 +82,21 @@ receivers:
         user: ${env:username}
         password: ${env:password}
       queries:
-        - query: 'select sum(size) as size from pg_ls_waldir();'
+        - query: 'select current_database() as database, sum(size) as size from pg_ls_waldir();'
           metrics:
             - metricName: "pg_custom_ls_waldir_size"
               valueColumn: "size"
-        - query: "select count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
+              dimensionColumns: ["database"]
+        - query: "SELECT current_database() as database, select count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
           metrics:
             - metricName: "pg_custom_wal_total_size"
               valueColumn: "total_size"
+              dimensionColumns: ["database"]
+         - query: "select relname as table, COUNT(pid), datname as database from pg_locks l join pg_class t on l.relation = t.oid join pg_stat_database d on l.database = d.datid where t.relkind = 'r' GROUP BY relname, datname;"          
+          metrics:
+            - metricName: "pg_custom_lock_by_table"
+              valueColumn: "count"
+              dimensionColumns: ["table", "database"] 
   smartagent/sql/other:
     - type: sql
       dbDriver: postgres
@@ -100,11 +107,11 @@ receivers:
         user: ${env:username}
         password: ${env:password}
       queries:
-        - query: "SELECT relname as table, n_dead_tup FROM pg_stat_user_tables;"
+        - query: "SELECT current_database() as database, relname as table, n_dead_tup FROM pg_stat_user_tables;"
           metrics:
             - metricName: "pg_custom_num_dead_rows"
               valueColumn: "n_dead_tup"
-              dimensionColumns: ["table"]
+              dimensionColumns: ["table", "database"]
         - query: "SELECT temp_bytes, datname as database FROM pg_stat_database WHERE datname IS NOT NULL;"
           metrics:
             - metricName: "pg_custom_temp_bytes"
@@ -131,14 +138,21 @@ receivers:
         user: ${env:username}
         password: ${env:password}
       queries:
-        - query: 'select sum(size) as size from pg_ls_waldir();'
+        - query: "select current_database() as database, sum(size) as size from pg_ls_waldir();"
           metrics:
             - metricName: "pg_custom_ls_waldir_size"
               valueColumn: "size"
-        - query: "select count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
+              dimensionsColumns: ["database"]
+        - query: "select current_database() as database, count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
           metrics:
             - metricName: "pg_custom_wal_total_size"
               valueColumn: "total_size"
+              dimensionsColumns: ["database"]
+        - query: "select relname as table, COUNT(pid), datname as database from pg_locks l join pg_class t on l.relation = t.oid join pg_stat_database d on l.database = d.datid where t.relkind = 'r' GROUP BY relname, datname;"          
+          metrics:
+            - metricName: "pg_custom_lock_by_table"
+              valueColumn: "count"
+              dimensionColumns: ["table", "database"]
   smartagent/sql/other_2:
     - type: sql
       dbDriver: postgres
@@ -149,11 +163,11 @@ receivers:
         user: ${env:username}
         password: ${env:password}
       queries:
-        - query: "SELECT relname as table, n_dead_tup FROM pg_stat_user_tables;"
+        - query: "SELECT current_database() as database, relname as table, n_dead_tup FROM pg_stat_user_tables;"
           metrics:
             - metricName: "pg_custom_num_dead_rows"
               valueColumn: "n_dead_tup"
-              dimensionColumns: ["table"]
+              dimensionColumns: ["table", "database"]
         - query: "SELECT temp_bytes, datname as database FROM pg_stat_database WHERE datname IS NOT NULL;"
           metrics:
             - metricName: "pg_custom_temp_bytes"
@@ -194,22 +208,6 @@ processors:
       - action: insert
         value: ${env:POSTGRES_HOST_2}
         key: host.name
-  attributes/dbname_postgres:
-    include:
-      match_type: strict
-      metric_names: ["pg_ls_waldir_size", "pg_wal_total_size"]
-    actions:
-      - key: database
-        value: "postgres"
-        action: insert
-  attributes/dbname_test:
-    include:
-      match_type: strict
-      metric_names: ["num_dead_rows"]
-    actions:
-      - key: database
-        value: "test"
-        action: insert
         
 exporters:
   # Traces
