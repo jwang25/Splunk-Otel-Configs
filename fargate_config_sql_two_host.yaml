@@ -138,16 +138,16 @@ receivers:
         user: ${env:username}
         password: ${env:password}
       queries:
-        - query: "select current_database() as database, sum(size) as size from pg_ls_waldir();"
+        - query: 'select current_database() as database, sum(size) as size from pg_ls_waldir();'
           metrics:
             - metricName: "pg_custom_ls_waldir_size"
               valueColumn: "size"
-              dimensionsColumns: ["database"]
-        - query: "select current_database() as database, count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
+              dimensionColumns: ["database"]
+        - query: "SELECT current_database() as database, select count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
           metrics:
             - metricName: "pg_custom_wal_total_size"
               valueColumn: "total_size"
-              dimensionsColumns: ["database"]
+              dimensionColumns: ["database"]
         - query: "select relname as table, COUNT(pid), datname as database from pg_locks l join pg_class t on l.relation = t.oid join pg_stat_database d on l.database = d.datid where t.relkind = 'r' GROUP BY relname, datname;"          
           metrics:
             - metricName: "pg_custom_lock_by_table"
