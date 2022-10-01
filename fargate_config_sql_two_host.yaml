@@ -105,6 +105,11 @@ receivers:
             - metricName: "num_dead_rows"
               valueColumn: "n_dead_tup"
               dimensionColumns: ["table_name"]
+        - query: "SELECT temp_bytes, datname as database FROM pg_stat_database WHERE datname IS NOT NULL;"
+          metrics:
+            - metricName: "temp_bytes"
+              valueColumn: "temp_bytes"
+              dimensionColumns: ["database"]
   smartagent/postgresql_host_two:
       type: postgresql
       topQueryLimit: 100
@@ -149,6 +154,11 @@ receivers:
             - metricName: "num_dead_rows"
               valueColumn: "n_dead_tup"
               dimensionColumns: ["table_name"]
+        - query: "SELECT temp_bytes, datname as database FROM pg_stat_database WHERE datname IS NOT NULL;"
+          metrics:
+            - metricName: "temp_bytes"
+              valueColumn: "temp_bytes"
+              dimensionColumns: ["database"]
 processors:
   batch:
   # Enabling the memory_limiter is strongly recommended for every pipeline.
