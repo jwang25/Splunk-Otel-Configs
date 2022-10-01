@@ -96,7 +96,17 @@ receivers:
           metrics:
             - metricName: "pg_custom_lock_by_table"
               valueColumn: "count"
-              dimensionColumns: ["table", "database"] 
+              dimensionColumns: ["table", "database"]
+        - query: "SELECT current_database() as database, checkpoints_timed FROM pg_stat_bgwriter;"          
+          metrics:
+            - metricName: "pg_custom_checkpoints_timed"
+              valueColumn: "checkpoints_timed"
+              dimensionColumns: ["database"]
+        - query: "SELECT current_database() as database, checkpoints_req FROM pg_stat_bgwriter;"          
+          metrics:
+            - metricName: "pg_custom_checkpoints_req"
+              valueColumn: "checkpoints_req"
+              dimensionColumns: ["database"]
   smartagent/sql/other:
     - type: sql
       dbDriver: postgres
@@ -153,6 +163,16 @@ receivers:
             - metricName: "pg_custom_lock_by_table"
               valueColumn: "count"
               dimensionColumns: ["table", "database"]
+        - query: "SELECT current_database() as database, checkpoints_timed FROM pg_stat_bgwriter;"          
+          metrics:
+            - metricName: "pg_custom_checkpoints_timed"
+              valueColumn: "checkpoints_timed"
+              dimensionColumns: ["database"]
+        - query: "SELECT current_database() as database, checkpoints_req FROM pg_stat_bgwriter;"          
+          metrics:
+            - metricName: "pg_custom_checkpoints_req"
+              valueColumn: "checkpoints_req"
+              dimensionColumns: ["database"]
   smartagent/sql/other_2:
     - type: sql
       dbDriver: postgres
