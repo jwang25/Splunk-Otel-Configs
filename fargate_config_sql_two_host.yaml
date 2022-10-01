@@ -61,7 +61,7 @@ receivers:
   smartagent/ecs-metadata:
     type: ecs-metadata
     excludedImages: ${env:ECS_METADATA_EXCLUDED_IMAGES}
-  smartagent/postgresql:
+  smartagent/postgresql_host_one:
     type: postgresql
     topQueryLimit: 100
     connectionString: 'host={{.host}} port={{.port}} user={{.user}} password={{.password}} sslmode=disable'
@@ -105,6 +105,50 @@ receivers:
             - metricName: "num_dead_rows"
               valueColumn: "n_dead_tup"
               dimensionColumns: ["table_name"]
+  smartagent/postgresql_host_two:
+      type: postgresql
+      topQueryLimit: 100
+      connectionString: 'host={{.host}} port={{.port}} user={{.user}} password={{.password}} sslmode=disable'
+      params:
+        host: ${env:POSTGRES_HOST_2}
+        port: 5432
+        user: ${env:username}
+        password: ${env:password}
+      extraMetrics: ["*"]
+      extraGroups: [queries,replication]
+  smartagent/sql/system_2:
+    - type: sql
+      dbDriver: postgres
+      connectionString: 'host={{.host}} port={{.port}} dbname=postgres user={{.user}} password={{.password}} sslmode=disable'
+      params:
+        host: ${env:POSTGRES_HOST_2}
+        port: 5432
+        user: ${env:username}
+        password: ${env:password}
+      queries:
+        - query: 'select sum(size) as size from pg_ls_waldir();'
+          metrics:
+            - metricName: "pg_ls_waldir_size"
+              valueColumn: "size"
+        - query: "select count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
+          metrics:
+            - metricName: "pg_wal_total_size"
+              valueColumn: "total_size"
+  smartagent/sql/other_2:
+    - type: sql
+      dbDriver: postgres
+      connectionString: 'host={{.host}} port={{.port}} dbname=test user={{.user}} password={{.password}} sslmode=disable'
+      params:
+        host: ${env:POSTGRES_HOST_2}
+        port: 5432
+        user: ${env:username}
+        password: ${env:password}
+      queries:
+        - query: "SELECT relname as table_name, n_dead_tup FROM pg_stat_user_tables;"
+          metrics:
+            - metricName: "num_dead_rows"
+              valueColumn: "n_dead_tup"
+              dimensionColumns: ["table_name"]
 processors:
   batch:
   # Enabling the memory_limiter is strongly recommended for every pipeline.
@@ -134,6 +178,11 @@ processors:
     attributes:
       - action: insert
         value: ${env:POSTGRES_HOST}
+        key: host.name
+  resource/add_environment_2:
+    attributes:
+      - action: insert
+        value: ${env:POSTGRES_HOST_2}
         key: host.name
   attributes/dbname_postgres:
     include:
@@ -180,9 +229,15 @@ service:
         - resourcedetection
 #        - resource/add_environment
       exporters: [sapm, signalfx]
+    # metrics pipeline for host one
     metrics:
-      receivers: [signalfx, smartagent/signalfx-forwarder, smartagent/ecs-metadata, prometheus/internal, smartagent/postgresql, smartagent/sql/system, smartagent/sql/other]
+      receivers: [signalfx, smartagent/signalfx-forwarder, smartagent/ecs-metadata, prometheus/internal, smartagent/postgresql_host_one, smartagent/sql/system, smartagent/sql/other]
       processors: [memory_limiter, batch, resourcedetection, resource/add_environment, attributes/dbname_postgres, attributes/dbname_test]
+      exporters: [signalfx]
+    # metrics pipeline for host two
+    metrics/host_2:
+      receivers: [signalfx, smartagent/signalfx-forwarder, smartagent/ecs-metadata, prometheus/internal, smartagent/postgresql_host_two, smartagent/sql/system_2, smartagent/sql/other_2]
+      processors: [memory_limiter, batch, resourcedetection, resource/add_environment_2, attributes/dbname_postgres, attributes/dbname_test]
       exporters: [signalfx]
     logs:
       receivers: [otlp]
