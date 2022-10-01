@@ -61,6 +61,7 @@ receivers:
   smartagent/ecs-metadata:
     type: ecs-metadata
     excludedImages: ${env:ECS_METADATA_EXCLUDED_IMAGES}
+  # postgres receiver to collect metrics from host one.
   smartagent/postgresql_host_one:
     type: postgresql
     topQueryLimit: 100
@@ -72,6 +73,7 @@ receivers:
       password: ${env:password}
     extraMetrics: ["*"]
     extraGroups: [queries,replication]
+  # custom sql receiver to ingest metrics from postgres database
   smartagent/sql/system:
     - type: sql
       dbDriver: postgres
@@ -82,26 +84,31 @@ receivers:
         user: ${env:username}
         password: ${env:password}
       queries:
+        # query to use pg_ls_waldir
         - query: 'select current_database() as database, sum(size) as size from pg_ls_waldir();'
           metrics:
             - metricName: "pg_custom_ls_waldir_size"
               valueColumn: "size"
               dimensionColumns: ["database"]
+        # query to get the total size of wal
         - query: "SELECT current_database() as database, select count(*) * pg_size_bytes(current_setting('wal_segment_size')) as total_size from pg_ls_dir('pg_xlog') as t(fname) where fname <> 'archive_status';"
           metrics:
             - metricName: "pg_custom_wal_total_size"
               valueColumn: "total_size"
               dimensionColumns: ["database"]
+        # query to detect locks by table, database
         - query: "select relname as table, COUNT(pid), datname as database from pg_locks l join pg_class t on l.relation = t.oid join pg_stat_database d on l.database = d.datid where t.relkind = 'r' GROUP BY relname, datname;"          
           metrics:
             - metricName: "pg_custom_lock_by_table"
               valueColumn: "count"
               dimensionColumns: ["table", "database"]
+        # query to number of scheduled checkpoints performed
         - query: "SELECT current_database() as database, checkpoints_timed FROM pg_stat_bgwriter;"          
           metrics:
             - metricName: "pg_custom_checkpoints_timed"
               valueColumn: "checkpoints_timed"
               dimensionColumns: ["database"]
+        # number of requested checkpoints that have been performed
         - query: "SELECT current_database() as database, checkpoints_req FROM pg_stat_bgwriter;"          
           metrics:
             - metricName: "pg_custom_checkpoints_req"
@@ -117,16 +124,19 @@ receivers:
         user: ${env:username}
         password: ${env:password}
       queries:
+        # query for number of dead rows
         - query: "SELECT current_database() as database, relname as table, n_dead_tup FROM pg_stat_user_tables;"
           metrics:
             - metricName: "pg_custom_num_dead_rows"
               valueColumn: "n_dead_tup"
               dimensionColumns: ["table", "database"]
+        # query for temporary bytes
         - query: "SELECT temp_bytes, datname as database FROM pg_stat_database WHERE datname IS NOT NULL;"
           metrics:
             - metricName: "pg_custom_temp_bytes"
               valueColumn: "temp_bytes"
               dimensionColumns: ["database"]
+  # Second postgres receiver for host number two
   smartagent/postgresql_host_two:
       type: postgresql
       topQueryLimit: 100
@@ -138,6 +148,7 @@ receivers:
         password: ${env:password}
       extraMetrics: ["*"]
       extraGroups: [queries,replication]
+  # Below are receivers that makes similar query request from the above
   smartagent/sql/system_2:
     - type: sql
       dbDriver: postgres
@@ -218,6 +229,8 @@ processors:
   # Optional: The following processor can be used to add a default "deployment.environment" attribute to the logs and
   # traces when it's not populated by instrumentation libraries.
   # If enabled, make sure to enable this processor in the pipeline below.
+  
+  # Below are two resource processors for inserting hostname into the metric
   resource/add_environment:
     attributes:
       - action: insert
