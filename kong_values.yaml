@@ -10,4 +10,4 @@ ingressController:
   enabled: true
 podAnnotations:
   prometheus.io/scrape: "true"
-  prometheus.io/port: '30007'
+  prometheus.io/port: '8100'
