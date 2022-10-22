@@ -163,9 +163,9 @@ service:
     traces:
       receivers: [jaeger, otlp, smartagent/signalfx-forwarder, zipkin]
       processors:
-        - memory_limiter
-        - batch
-        - resourcedetection
+      - memory_limiter
+      - batch
+      - resourcedetection
       #- resource/add_environment
       exporters: [sapm, signalfx]
       # Use instead when sending to gateway
@@ -198,9 +198,9 @@ service:
     logs:
       receivers: [fluentforward, otlp]
       processors:
-        - memory_limiter
-        - batch
-        - resourcedetection
+      - memory_limiter
+      - batch
+      - resourcedetection
       #- resource/add_environment
       exporters: [splunk_hec]
       # Use instead when sending to gateway
