@@ -1,0 +1,20 @@
+clusterName: "johnw_cluster"
+splunkPlatform:
+  endpoint: "https://scb-shw-328b2c1dccc6c5.stg.splunkcloud.com:8088/services/collector"
+  # Required for Splunk Enterprise/Cloud (if `endpoint` is specified). Splunk
+  # HTTP Event Collector token.
+  token: "713f8450-a165-48db-9d7c-bffdec931140"
+
+  # Name of the Splunk event type index targeted. Required when ingesting logs to Splunk Platform.
+  index: "main"
+  logsEnabled: true
+  # If you enable metrics collection, make sure that `metricsIndex` is provided as well.
+  metricsEnabled: false
+  fieldNameConvention:
+    # Boolean for renaming pod metadata fields to match to Splunk Connect for Kubernetes helm chart.
+    renameFieldsSck: true
+    # Boolean for keeping Otel convention fields after renaming it
+    keepOtelConvention: false
+cloudProvider: "aws"
+distribution: "eks"
+logsEngine: "fluentd"

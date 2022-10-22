@@ -1,0 +1,131 @@
+clusterName: "johnw_cluster"
+splunkObservability:
+  realm: "us0"
+  accessToken: "token"
+  metricsEnabled: true
+  tracesEnabled: true
+  logsEnabled: true
+cloudProvider: "aws"
+distribution: "eks"
+logsEngine: "otel"
+agent:
+  enabled: true
+  config:
+    processors:
+      filter/1:
+        metrics:
+          include:
+            match_type: regexp
+            resource_attributes:
+              - Key: k8s.namespace.name
+                Value: "(default)"
+      filter/2:
+        metrics:
+          exclude:
+            match_type: regexp
+            metric_names:
+              - k8s.*
+              - container*
+    service:
+      pipelines:
+        metrics:
+          exporters:
+            - signalfx
+          processors:
+            - memory_limiter
+            - filter/1
+            - batch
+            - resourcedetection
+            - resource
+          receivers:
+            - hostmetrics
+            - kubeletstats
+            - otlp
+            - receiver_creator
+            - signalfx
+        metrics/hostmetrics:
+          exporters:
+            - signalfx
+          processors:
+            - memory_limiter
+            - batch
+            - resourcedetection
+            - resource
+            - filter/2
+          receivers:
+            - hostmetrics
+            - kubeletstats
+            - otlp
+            - receiver_creator
+            - signalfx
+
+  ####################################################################################################
+  # The ports to be exposed by the agent to the host.
+  # Make sure that only necessary ports are exposed, <hostIP, hostPort, protocol> combination must
+  # be unique across all the nodes in k8s cluster. Any port can be disabled,
+  # For example to disable zipkin ports set `agent.ports.zipkin: null`.
+  resources:
+    limits:
+      cpu: 100m
+      memory: 500Mi
+################################################################################
+# OpenTelemetry Kubernetes cluster receiver
+# This is an extra 1-replica deployment of Open-temlemetry collector used
+# specifically for collecting metrics from kubernetes API.
+################################################################################
+
+# Cluster receiver collects cluster level metrics from the Kubernetes API.
+# It has to be running on one pod, so it uses its own dedicated deployment with 1 replica.
+
+clusterReceiver:
+  enabled: true
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+  # OpenTelemetry Collector configuration for K8s Cluster Receiver deployment can be overriden in this field.
+  # Default configuration defined in templates/config/_otel-k8s-cluster-receiver-config.tpl
+  # Any additional fields will be merged into the defaults,
+  # existing fields can be disabled by setting them to null value.
+  # Jek to add config here too for clusterreceiver
+
+  # Change this
+  config:
+    processors:
+      filter/include:
+        metrics:
+          include:
+            match_type: regexp
+            resource_attributes:
+              - Key: k8s.namespace.name
+                Value: "default"
+    service:
+      extensions:
+        - health_check
+        - memory_ballast
+      pipelines:
+        metrics:
+          exporters:
+            - signalfx
+          processors:
+            - memory_limiter
+            - batch
+            - resource
+            - resource/k8s_cluster
+            - filter/include
+          receivers:
+            - k8s_cluster
+################################################################################
+# OpenTelemetry "collector" k8s deployment configuration.
+# This is an additional deployment of Open-telemetry collector that can be used
+# to pass traces trough it, make k8s metadata enrichment and batching.
+# Another use case is to point tracing instrumentation libraries directly to
+# the collector endpoint instead of local agents. The collector running in the
+# passthrough mode is recommended for large k8s clusters, disabled by default.
+################################################################################
+
+gateway:
+  # Defines if collector deployment is enabled
+  # Recommended for large k8s clusters, disabled by default.
+  enabled: false
